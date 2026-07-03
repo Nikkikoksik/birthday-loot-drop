@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>you got mail 📦</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Rubik:wght@400;600;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="scenery">
+    <div class="sky"></div>
+    <div class="sun"></div>
+    <div class="ocean"></div>
+    <div class="sun-glimmer"></div>
+    <div class="sand"></div>
+    <svg class="palm palm-l" viewBox="0 0 200 320" aria-hidden="true">
+      <path d="M96 320 Q88 220 100 150 L110 150 Q104 220 112 320 Z" fill="#120a14"/>
+      <g fill="#120a14">
+        <path d="M104 152 Q60 120 18 132 Q58 92 106 118 Z"/>
+        <path d="M104 150 Q70 96 30 84 Q84 70 110 122 Z"/>
+        <path d="M106 148 Q104 84 74 52 Q126 66 114 134 Z"/>
+        <path d="M108 148 Q136 90 180 82 Q140 132 114 142 Z"/>
+        <path d="M108 152 Q150 128 190 140 Q150 96 106 122 Z"/>
+      </g>
+    </svg>
+    <svg class="palm palm-r" viewBox="0 0 200 320" aria-hidden="true">
+      <path d="M96 320 Q88 220 100 150 L110 150 Q104 220 112 320 Z" fill="#120a14"/>
+      <g fill="#120a14">
+        <path d="M104 152 Q60 120 18 132 Q58 92 106 118 Z"/>
+        <path d="M104 150 Q70 96 30 84 Q84 70 110 122 Z"/>
+        <path d="M106 148 Q104 84 74 52 Q126 66 114 134 Z"/>
+        <path d="M108 148 Q136 90 180 82 Q140 132 114 142 Z"/>
+        <path d="M108 152 Q150 128 190 140 Q150 96 106 122 Z"/>
+      </g>
+    </svg>
+  </div>
+  <canvas id="bubbles"></canvas>
+  <canvas id="confetti"></canvas>
+  <div id="rays"></div>
+
+  <button id="mute" aria-label="Toggle sound" title="sound">🔊</button>
+
+  <main id="stage">
+
+    <!-- SCENE 1 · the box -->
+    <section id="scene-box" class="scene is-active">
+      <div id="gift-scene">
+        <div class="gift-glow"></div>
+        <div class="gift-shadow"></div>
+        <div id="gift" role="button" tabindex="0" aria-label="Open the birthday box">
+          <div class="cube">
+            <div class="cf face-front"><div class="ribbon-v"></div></div>
+            <div class="cf face-right"><div class="ribbon-v"></div></div>
+            <div class="lid3d">
+              <div class="cf lid-top">
+                <div class="ribbon-v"></div>
+                <div class="ribbon-h"></div>
+                <div class="knot"></div>
+              </div>
+              <div class="cf lid-front"></div>
+              <div class="cf lid-right"></div>
+            </div>
+          </div>
+          <div class="legs">
+            <div class="leg leg-l"></div>
+            <div class="leg leg-r"></div>
+          </div>
+        </div>
+      </div>
+      <h1 class="idle-line"></h1>
+      <p class="idle-hint"></p>
+    </section>
+
+    <!-- SCENE 2 · the legendary pull -->
+    <section id="scene-legendary" class="scene">
+      <p class="legendary-tag"></p>
+      <div class="podium">
+        <img id="face" alt="the birthday legend himself" />
+        <div class="pedestal"></div>
+      </div>
+      <h2 class="happy-line"><span class="happy-prefix"></span> <span class="happy-name"></span></h2>
+      <div class="code-card">
+        <p class="code-label"></p>
+        <p class="game-name"></p>
+        <code id="steam-key"></code>
+        <div class="code-actions">
+          <button id="copy-btn"></button>
+          <a id="redeem-link" target="_blank" rel="noopener"></a>
+        </div>
+      </div>
+      <p class="footer-line"></p>
+    </section>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script src="js/sfx.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

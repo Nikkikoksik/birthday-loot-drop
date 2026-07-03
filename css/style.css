@@ -1,0 +1,546 @@
+/* ============ MIAMI DUSK ============ */
+:root {
+  --night: #16081f;
+  --dusk-purple: #3c1450;
+  --dusk-magenta: #a12058;
+  --horizon-glow: #ff8f5e;
+  --box-pink: #ff2d78;
+  --box-pink-dark: #a8154f;
+  --box-pink-side: #7c0f3c;
+  --biolum: #35e0ff;
+  --gold: #ffc933;
+  --gold-hot: #ffe58a;
+  --gotcha-red: #ff4655;
+  --paper: #f4f8ff;
+  --display: "Titan One", system-ui, sans-serif;
+  --body: "Rubik", system-ui, sans-serif;
+  --mono: "Space Mono", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--body);
+  color: var(--paper);
+  background: var(--night);
+  overflow: hidden;
+}
+
+/* ---- layered beach scenery, parallaxed by --dx / --dy from JS ---- */
+#scenery {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+.sky {
+  position: absolute;
+  inset: 0 0 30% 0;
+  background: linear-gradient(
+    180deg,
+    var(--night) 0%,
+    var(--dusk-purple) 38%,
+    var(--dusk-magenta) 72%,
+    var(--horizon-glow) 100%
+  );
+}
+.sun {
+  position: absolute;
+  left: 50%;
+  top: 70%;
+  width: 46vmin;
+  height: 46vmin;
+  translate: calc(-50% + var(--dx, 0) * -14px) calc(-50% + var(--dy, 0) * -8px);
+  background: radial-gradient(circle,
+    #ffe9b0 0%, #ffb45e 28%, rgba(255, 110, 90, 0.55) 52%, transparent 70%);
+  filter: blur(2px);
+}
+.ocean {
+  position: absolute;
+  left: 0; right: 0;
+  top: 70%;
+  height: 14%;
+  background:
+    repeating-linear-gradient(180deg,
+      rgba(255, 170, 120, 0.16) 0 2px, transparent 2px 7px),
+    linear-gradient(180deg, #571c4e 0%, #2b1035 100%);
+}
+.sun-glimmer {
+  position: absolute;
+  left: 50%;
+  top: 70%;
+  width: 18vmin;
+  height: 14%;
+  translate: calc(-50% + var(--dx, 0) * -14px) 0;
+  background: linear-gradient(180deg, rgba(255, 210, 140, 0.5), transparent);
+  -webkit-mask-image: repeating-linear-gradient(180deg, black 0 3px, transparent 3px 8px);
+  mask-image: repeating-linear-gradient(180deg, black 0 3px, transparent 3px 8px);
+  filter: blur(1px);
+}
+.sand {
+  position: absolute;
+  left: 0; right: 0;
+  top: 84%;
+  bottom: 0;
+  background: linear-gradient(180deg, #33201a 0%, #1c1210 60%, #120b0a 100%);
+}
+.sand::before {
+  /* wet-sand sheen along the waterline */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 18%;
+  background: linear-gradient(180deg, rgba(255, 160, 110, 0.22), transparent);
+}
+.palm {
+  position: absolute;
+  bottom: -4vmin;
+  width: 34vmin;
+  height: 54vmin;
+  transform-origin: 50% 100%;
+  animation: sway 6s ease-in-out infinite;
+}
+.palm-l { left: -6vmin; translate: calc(var(--dx, 0) * 26px) 0; }
+.palm-r {
+  right: -6vmin;
+  translate: calc(var(--dx, 0) * 26px) 0;
+  scale: -1 1;
+  animation-delay: -3s;
+}
+@keyframes sway {
+  0%, 100% { rotate: -1.6deg; }
+  50% { rotate: 1.6deg; }
+}
+
+/* golden flood overlay at the legendary moment */
+#scenery::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(90vmax 70vmax at 50% 60%, rgba(255, 201, 51, 0.4) 0%, rgba(60, 30, 0, 0.55) 70%);
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+body.gold-hour #scenery::after { opacity: 1; }
+
+canvas#bubbles, canvas#confetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+canvas#confetti { z-index: 30; }
+
+/* rotating god rays, hidden until the pull */
+#rays {
+  position: fixed;
+  left: 50%;
+  top: 55%;
+  width: 160vmax;
+  height: 160vmax;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 201, 51, 0.14) 0deg 9deg,
+    transparent 9deg 24deg
+  );
+  -webkit-mask-image: radial-gradient(circle, black 0%, transparent 62%);
+  mask-image: radial-gradient(circle, black 0%, transparent 62%);
+  opacity: 0;
+  animation: spin 40s linear infinite;
+  pointer-events: none;
+  will-change: transform;
+}
+#rays.on { opacity: 1; transition: opacity 1.4s ease; }
+@keyframes spin { to { rotate: 360deg; } }
+
+#mute {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 60;
+  font-size: 22px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+/* ============ STAGE & SCENES ============ */
+#stage {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+#stage.shake { animation: shake 0.5s linear; }
+@keyframes shake {
+  10% { translate: -14px 8px; rotate: -1deg; }
+  30% { translate: 12px -10px; rotate: 1deg; }
+  50% { translate: -10px 6px; }
+  70% { translate: 8px -6px; }
+  90% { translate: -4px 2px; }
+}
+
+.scene {
+  grid-area: 1 / 1;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 2.5vh, 26px);
+  text-align: center;
+  padding: 24px;
+}
+.scene.is-active { display: flex; }
+
+/* ============ SCENE 1 · THE 3D BOX ============ */
+#gift-scene {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  perspective: 950px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.gift-glow, .gift-shadow { pointer-events: none; }
+.gift-glow {
+  position: absolute;
+  inset: -18%;
+  background: radial-gradient(circle, rgba(255, 45, 120, 0.32) 0%, transparent 62%);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+#gift-scene.violent .gift-glow {
+  background: radial-gradient(circle, rgba(255, 201, 51, 0.55) 0%, transparent 62%);
+  animation-duration: 0.5s;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; scale: 1; }
+  50% { opacity: 1; scale: 1.12; }
+}
+
+.gift-shadow {
+  position: absolute;
+  bottom: 6px;
+  width: 220px;
+  height: 44px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 65%);
+  animation: shadow-bob 3.2s ease-in-out infinite;
+}
+@keyframes shadow-bob {
+  0%, 100% { scale: 1; opacity: 0.9; }
+  50% { scale: 0.82; opacity: 0.55; }
+}
+
+#gift {
+  position: relative;
+  width: 200px;
+  height: 150px;
+  outline: none;
+  animation: bob 3.2s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+@keyframes bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -16px; }
+}
+#gift:hover, #gift:focus-visible { animation: bob 3.2s ease-in-out infinite, rattle 0.35s linear infinite; }
+#gift.violent { animation: rattle 0.12s linear infinite; }
+@keyframes rattle {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -3.5deg; }
+  75% { rotate: 3.5deg; }
+}
+
+/* the cuboid: mouse tilt rides on top of the base isometric angle */
+.cube {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform:
+    rotateX(calc(-14deg + var(--dy, 0) * 7deg))
+    rotateY(calc(-30deg + var(--dx, 0) * 14deg));
+}
+.cf { position: absolute; left: 50%; top: 50%; }
+
+/* box body — each face lit differently: the depth illusion */
+.face-front {
+  width: 200px; height: 150px;
+  transform: translate(-50%, -50%) translateZ(70px);
+  background: linear-gradient(180deg, var(--box-pink) 0%, var(--box-pink-dark) 100%);
+  border-radius: 4px;
+  box-shadow: inset 0 -18px 30px rgba(0,0,0,0.3);
+}
+.face-right {
+  width: 140px; height: 150px;
+  transform: translate(-50%, -50%) rotateY(90deg) translateZ(100px);
+  background: linear-gradient(180deg, var(--box-pink-side) 0%, #530a28 100%);
+  border-radius: 4px;
+}
+.ribbon-v {
+  position: absolute;
+  left: 50%;
+  top: 0; bottom: 0;
+  width: 30px;
+  translate: -50% 0;
+  background: linear-gradient(90deg, #e0a90f, var(--gold) 45%, #b57e00);
+  box-shadow: 0 0 14px rgba(255, 201, 51, 0.45);
+}
+.face-right .ribbon-v { opacity: 0.75; }
+
+/* the lid — its own mini-3D slab so it can fly off in one piece */
+.lid3d {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.3, -0.4, 0.5, 1), opacity 0.6s ease;
+}
+.lid-top {
+  width: 216px; height: 156px;
+  transform: translate(-50%, -50%) rotateX(90deg) translateZ(75px);
+  background: linear-gradient(135deg, #ff5c96 0%, var(--box-pink) 60%, var(--box-pink-dark) 100%);
+  border-radius: 6px;
+}
+.lid-top .ribbon-v { width: 30px; }
+.ribbon-h {
+  position: absolute;
+  top: 50%;
+  left: 0; right: 0;
+  height: 30px;
+  translate: 0 -50%;
+  background: linear-gradient(180deg, #e0a90f, var(--gold) 45%, #b57e00);
+  box-shadow: 0 0 14px rgba(255, 201, 51, 0.45);
+}
+.knot {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 52px; height: 40px;
+  /* un-rotate out of the lid plane so the bow stands upright */
+  transform: translate(-50%, -50%) rotateX(-90deg) translateY(-18px);
+  background: radial-gradient(circle at 35% 35%, var(--gold-hot), #c58a00 70%);
+  border-radius: 50% 50% 42% 42%;
+  box-shadow: 0 0 16px rgba(255, 201, 51, 0.6);
+}
+.lid-front {
+  width: 216px; height: 36px;
+  transform: translate(-50%, -50%) translateY(-57px) translateZ(78px);
+  background: linear-gradient(180deg, #ff478a 0%, #c21b60 100%);
+  border-radius: 4px;
+}
+.lid-right {
+  width: 156px; height: 36px;
+  transform: translate(-50%, -50%) translateY(-57px) rotateY(90deg) translateZ(108px);
+  background: linear-gradient(180deg, #b3164f 0%, #6d0c34 100%);
+  border-radius: 4px;
+}
+#gift.popped .lid3d {
+  transform: translateY(-70vh) translateZ(60px) rotateZ(40deg) rotateX(30deg);
+  opacity: 0;
+}
+
+.idle-line {
+  font-family: var(--display);
+  font-size: clamp(26px, 5.4vmin, 46px);
+  letter-spacing: 0.02em;
+  text-shadow: 0 4px 0 rgba(0,0,0,0.5), 0 0 34px rgba(255, 45, 120, 0.4);
+}
+.idle-hint {
+  color: var(--gold-hot);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: clamp(11px, 1.8vmin, 14px);
+  opacity: 0.85;
+  animation: blink 1.6s ease-in-out infinite;
+}
+@keyframes blink { 50% { opacity: 0.35; } }
+
+@media (max-width: 520px) {
+  #gift-scene { scale: 0.72; margin: -40px 0; }
+}
+
+/* ============ THE LEGS ============ */
+.legs {
+  position: absolute;
+  left: 50%;
+  bottom: -30px;
+  width: 96px;
+  translate: -50% 0;
+  display: flex;
+  justify-content: space-between;
+}
+.leg {
+  position: relative;
+  width: 13px;
+  height: 36px;
+  background: linear-gradient(180deg, #7c0f3c, #4a0722);
+  border-radius: 7px;
+  transform-origin: 50% 0;
+  scale: 1 0;                    /* tucked away until needed */
+  transition: scale 0.25s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+.leg::after {
+  /* gold sneakers. non-negotiable. */
+  content: "";
+  position: absolute;
+  left: -3px;
+  bottom: -7px;
+  width: 26px;
+  height: 11px;
+  background: linear-gradient(180deg, var(--gold-hot), #c58a00);
+  border-radius: 8px 14px 6px 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+#gift-scene.legs-out .leg { scale: 1 1; }
+#gift-scene.running .leg-l { animation: leg-swing 0.22s linear infinite; }
+#gift-scene.running .leg-r { animation: leg-swing 0.22s linear infinite; animation-delay: -0.11s; }
+@keyframes leg-swing {
+  0%, 100% { rotate: 40deg; }
+  50% { rotate: -40deg; }
+}
+/* frantic little gallop bounce while sprinting */
+#gift-scene.running #gift { animation: gallop 0.22s linear infinite; }
+@keyframes gallop {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -7px; }
+}
+
+/* ============ THE GREAT ESCAPE ============ */
+/* keep the runaway on its own GPU layer so the 3D box doesn't re-raster mid-sprint */
+#gift-scene.flee, #gift-scene.come-back { will-change: transform; }
+/* one animation at a time: the pulsing glow fights for frames during the run */
+#gift-scene.flee .gift-glow, #gift-scene.come-back .gift-glow { animation: none; opacity: 0.4; }
+
+/* wind-up left, then bolt off toward the horizon, shrinking into the distance */
+#gift-scene.flee {
+  animation: flee 2s both;
+}
+@keyframes flee {
+  0%   { translate: 0 0; scale: 1; rotate: 0deg; animation-timing-function: ease-in-out; }
+  22%  { translate: -8vw 0.5vh; scale: 1.03; rotate: -7deg; animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.5); }
+  100% { translate: 70vw -14vh; scale: 0.1; rotate: 12deg; }
+}
+#gift-scene.gone { opacity: 0; }
+
+/* skid back in from the other side, overshoot, settle */
+#gift-scene.come-back {
+  animation: come-back 1.5s both;
+}
+@keyframes come-back {
+  0%   { translate: -70vw -14vh; scale: 0.1; rotate: -12deg; animation-timing-function: cubic-bezier(0.2, 0.5, 0.4, 1); }
+  60%  { translate: 4vw -0.5vh; scale: 1.04; rotate: 5deg; animation-timing-function: ease-in-out; }
+  80%  { translate: -1.5vw 0; scale: 0.99; rotate: -2deg; animation-timing-function: ease-in-out; }
+  100% { translate: 0 0; scale: 1; rotate: 0deg; }
+}
+
+/* ============ SCENE 3 · THE LEGENDARY PULL ============ */
+#scene-legendary.is-active > * { animation: rise 0.7s cubic-bezier(0.2, 1.3, 0.4, 1) both; }
+#scene-legendary.is-active > .legendary-tag { animation-delay: 0.15s; }
+#scene-legendary.is-active > .happy-line    { animation-delay: 0.55s; }
+#scene-legendary.is-active > .code-card     { animation-delay: 0.95s; }
+#scene-legendary.is-active > .footer-line   { animation-delay: 1.4s; }
+@keyframes rise {
+  from { translate: 0 60px; opacity: 0; scale: 0.85; }
+  to   { translate: 0 0; opacity: 1; scale: 1; }
+}
+
+.legendary-tag {
+  font-family: var(--display);
+  color: var(--gold);
+  font-size: clamp(20px, 4.2vmin, 36px);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 30px rgba(255, 201, 51, 0.65), 0 4px 0 rgba(0,0,0,0.5);
+}
+
+.podium { display: flex; flex-direction: column; align-items: center; }
+#face {
+  height: clamp(150px, 30vmin, 270px);
+  filter: drop-shadow(0 0 34px rgba(255, 201, 51, 0.55));
+  animation: hover-float 3s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes hover-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
+}
+.pedestal {
+  width: clamp(170px, 32vmin, 300px);
+  height: clamp(34px, 6vmin, 56px);
+  margin-top: -10px;
+  background: linear-gradient(180deg, var(--gold-hot) 0%, #cf9a06 40%, #7a5800 100%);
+  clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+  border-radius: 4px;
+  box-shadow: 0 14px 40px rgba(255, 201, 51, 0.35);
+}
+
+.happy-line {
+  font-family: var(--display);
+  font-size: clamp(24px, 5vmin, 44px);
+  text-shadow: 0 4px 0 rgba(0,0,0,0.5);
+}
+.happy-name { color: var(--gold); }
+
+.code-card {
+  background: rgba(22, 8, 31, 0.88);
+  border: 1px solid rgba(255, 201, 51, 0.4);
+  border-radius: 16px;
+  padding: clamp(14px, 2.6vmin, 24px) clamp(18px, 4vmin, 38px);
+  box-shadow: 0 0 40px rgba(255, 201, 51, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.code-label {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  opacity: 0.65;
+}
+.game-name {
+  font-family: var(--display);
+  color: var(--biolum);
+  font-size: clamp(18px, 3.4vmin, 28px);
+  text-shadow: 0 0 22px rgba(53, 224, 255, 0.5);
+}
+#steam-key {
+  font-family: var(--mono);
+  font-size: clamp(16px, 3vmin, 24px);
+  letter-spacing: 0.08em;
+  background: rgba(0,0,0,0.45);
+  border-radius: 8px;
+  padding: 8px 16px;
+  user-select: all;
+}
+.code-actions { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; justify-content: center; }
+#copy-btn {
+  font-family: var(--display);
+  font-size: 15px;
+  color: #241a00;
+  background: linear-gradient(180deg, var(--gold-hot), var(--gold));
+  border: none;
+  border-radius: 10px;
+  padding: 10px 22px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #8a6200;
+  transition: translate 0.08s ease, box-shadow 0.08s ease;
+}
+#copy-btn:active { translate: 0 4px; box-shadow: 0 1px 0 #8a6200; }
+#redeem-link {
+  align-self: center;
+  color: var(--biolum);
+  font-weight: 600;
+  padding: 10px 6px;
+}
+
+.footer-line { font-size: 12px; opacity: 0.5; letter-spacing: 0.06em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" width="240" height="280">
+  <!-- placeholder legend — replace with your ChatGPT-generated pic via config.js -->
+  <defs>
+    <radialGradient id="skin" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#ffd9a0"/>
+      <stop offset="100%" stop-color="#e8b06a"/>
+    </radialGradient>
+  </defs>
+  <!-- head -->
+  <ellipse cx="120" cy="110" rx="78" ry="88" fill="url(#skin)"/>
+  <!-- absurdly chiseled jaw (mewing in progress) -->
+  <path d="M52 130 Q60 205 120 215 Q180 205 188 130 L165 195 Q120 225 75 195 Z" fill="#d69c55"/>
+  <!-- sunglasses -->
+  <rect x="58" y="82" width="55" height="30" rx="8" fill="#111"/>
+  <rect x="127" y="82" width="55" height="30" rx="8" fill="#111"/>
+  <rect x="110" y="92" width="20" height="8" fill="#111"/>
+  <!-- smug mouth -->
+  <path d="M90 165 Q120 185 150 160" stroke="#7a4a1d" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- body hint -->
+  <path d="M60 240 Q120 210 180 240 L190 280 L50 280 Z" fill="#0b3550"/>
+  <text x="120" y="262" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="16" fill="#35e0ff">UR PIC HERE</text>
+</svg>
