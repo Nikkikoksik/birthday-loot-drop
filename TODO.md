@@ -11,10 +11,25 @@ Run it: `npx serve -l 4173` in the folder → http://localhost:4173.
 Press **R** after the reveal to replay.
 
 ## Blocked on Nick (do FIRST if not done)
-- [ ] Create the GitHub repo: https://github.com/new → name `birthday-loot-drop`,
-      **Public**, no README → then have Claude push and walk through enabling
-      Pages (Settings → Pages → Deploy from branch → main / root).
-      Until this is pushed, the project only exists on the desktop PC.
+- [x] GitHub repo created and pushed: https://github.com/Nikkikoksik/birthday-loot-drop
+- [ ] Enable Pages: repo → Settings → Pages → Deploy from a branch → main / (root)
+      → site will be at https://nikkikoksik.github.io/birthday-loot-drop/
+
+## New ideas from 2026-07-02 evening (feasibility-checked)
+- [ ] "Hide the code from him": can't be done fully — any web page's code is
+      viewable via view-source, and free GitHub Pages requires a public repo.
+      Realistic options: (a) accept it — he won't look before clicking;
+      (b) make repo private + host free on Netlify instead of Pages;
+      (c) minify/obfuscate the JS to deter casual snooping. DECIDE TOMORROW.
+- [ ] "Auto-send the game when he opens the box": Steam has NO API for sending
+      gifts — automating the actual gift delivery is not possible. What IS
+      possible: a notification to Nick (email/Discord webhook) the moment the
+      box is opened, so Nick manually fires the Steam gift right then. Needs a
+      tiny free endpoint (Formspree / Discord webhook / Cloudflare Worker).
+- [ ] "Track where in Miami it was opened": browser geolocation would show him
+      a permission popup (spoils the vibe). IP-based lookup gives city-level
+      only ("Miami") without any popup — can ride along in the open-notification
+      ping. Good enough to confirm HE opened it, not a street address.
 
 ## The gift itself (decision made 2026-07-02)
 Steam doesn't sell keys to individuals — going with **"Buy as Gift"** on the
